@@ -36,30 +36,8 @@ function alphacard_parse_values($raw) {
 }
 
 function alphacard_render_markup($markup, $values) {
-    preg_match_all('/%%\s*([^%]+?)\s*%%/s', $markup, $matches, PREG_OFFSET_CAPTURE);
-    $rendered = '';
-    $cursor = 0;
-    foreach ($matches[0] as $index => $occurrence) {
-        $offset = $occurrence[1];
-        $rendered .= substr($markup, $cursor, $offset - $cursor);
-        $token = trim($matches[1][$index][0]);
-        $value = isset($values[$token]) ? $values[$token] : '';
-        // Inspect the open tag immediately before this token. URL attributes and CSS url()
-        // need protocol validation; other contexts receive HTML escaping.
-        $prefix = substr($markup, 0, $offset);
-        $tag_start = strrpos($prefix, '<');
-        $tag_end = strrpos($prefix, '>');
-        if ($tag_start !== false && ($tag_end === false || $tag_start > $tag_end)) {
-            $attribute = substr($prefix, $tag_start);
-            if (preg_match('/(?:href|src|action|poster)\s*=\s*(["\'])[^"\']*$/i', $attribute)
-                || preg_match('/url\(\s*(["\'])?[^)"\']*$/i', $attribute)) {
-                $rendered .= esc_url($value);
-                $cursor = $offset + strlen($occurrence[0]);
-                continue;
-            }
-        }
-        $rendered .= esc_html($value);
-        $cursor = $offset + strlen($occurrence[0]);
-    }
-    return $rendered . substr($markup, $cursor);
+    return preg_replace_callback('/%%\s*([^%]+?)\s*%%/s', function ($match) use ($values) {
+        $token = trim($match[1]);
+        return isset($values[$token]) ? $values[$token] : '';
+    }, $markup);
 }

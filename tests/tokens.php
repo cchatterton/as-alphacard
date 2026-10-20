@@ -1,22 +1,20 @@
 <?php
-// Standalone checks for token discovery and context escaping.
+// Standalone checks for token discovery and exact-value substitution.
 define('ABSPATH', __DIR__);
-function esc_html($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
-function esc_url($value) { return preg_match('~^https?://~', $value) ? htmlspecialchars($value, ENT_QUOTES, 'UTF-8') : ''; }
 require dirname(__DIR__) . '/alphacard/tokens.php';
 
 $markup = '<a href="%%$post->post_permalink%%"><span style="background-image:url(\'%%$image->featured%%\')">%%$post->post_title%% / %%$post->post_title%%</span></a>';
 $expected = array('$post->post_permalink', '$image->featured', '$post->post_title');
 if (alphacard_find_tokens($markup) !== $expected) { throw new RuntimeException('Token discovery failed'); }
-$values = array('$post->post_permalink' => 'javascript:alert(1)', '$image->featured' => 'https://example.org/a.jpg', '$post->post_title' => '<Hello> & "world"');
+$values = array('$post->post_permalink' => '/robot', '$image->featured' => 'https://example.org/a.jpg', '$post->post_title' => '<i class="fa-solid fa-robot"></i>');
 $rendered = alphacard_render_markup($markup, $values);
-if (strpos($rendered, 'javascript:') !== false || strpos($rendered, '&lt;Hello&gt; &amp; &quot;world&quot;') === false || strpos($rendered, 'https://example.org/a.jpg') === false) {
-    throw new RuntimeException('Rendering or escaping failed: ' . $rendered);
+if ($rendered !== '<a href="/robot"><span style="background-image:url(\'https://example.org/a.jpg\')"><i class="fa-solid fa-robot"></i> / <i class="fa-solid fa-robot"></i></span></a>') {
+    throw new RuntimeException('Raw rendering failed: ' . $rendered);
 }
 $state = json_encode(array('card' => 42, 'tokens' => $expected, 'values' => $values));
 if (alphacard_parse_values($state) !== $values) { throw new RuntimeException('Value parsing failed'); }
 $same_token = '<a href="%%link%%">%%link%%</a>';
-if (alphacard_render_markup($same_token, array('link' => 'javascript:alert(1)')) !== '<a href="">javascript:alert(1)</a>') {
+if (alphacard_render_markup($same_token, array('link' => '/example')) !== '<a href="/example">/example</a>') {
     throw new RuntimeException('Repeated token context failed');
 }
 echo "Token checks passed\n";

@@ -10,12 +10,12 @@ Copy `alphacard/` into the active theme's `blocks/` directory. Use the same shar
 
 1. Add AlphaCard and select a published Card.
 2. Click **Get merge tokens**. The editor sends an authenticated AJAX request, reads that Card's `card_markup`, and creates one value input for each unique `%%...%%` token.
-3. Enter text or URLs as needed, then save the page. The values are stored in the block's `token_values` ACF field as JSON. Each AlphaCard instance keeps its own values.
+3. Enter text, HTML, or URLs as needed, then save the page. The values are stored in the block's `token_values` ACF field as JSON. Each AlphaCard instance keeps its own values.
 4. If the Card template changes, click **Get merge tokens** again to refresh the inputs. Matching values are preserved.
 
 Example: a template containing `%%$post->post_title%%` and `%%$image->featured%%` gets two local inputs. These names are treated as literal keys; AlphaCard does not query a post, ACF field, or featured image to resolve them.
 
-The block renders the selected Card's markup with local substitutions. Missing values become empty strings. Text is HTML escaped; values inside URL attributes and CSS `url(...)` are passed through WordPress URL escaping. Card template markup itself is trusted administrator-authored content, as in AlphaBlock's Card workflow. An unpublished or missing Card renders nothing on the public page and shows guidance in editor preview.
+The block renders the selected Card's markup with local substitutions. Missing values become empty strings. Values are inserted exactly as entered, including HTML markup, into text or attribute positions. Editors should use the inputs in the context of the Card template. Card template markup is administrator-authored content, as in AlphaBlock's Card workflow. An unpublished or missing Card renders nothing on the public page and shows guidance in editor preview.
 
 ## Development
 

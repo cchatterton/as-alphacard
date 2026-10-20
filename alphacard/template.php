@@ -41,4 +41,4 @@ if (is_string($raw_values)) {
 if (is_array($saved_state) && isset($saved_state['card']) && (int) $saved_state['card'] !== $card_id) {
     $values = array();
 }
-echo '<div class="alphacard">' . alphacard_render_markup(htmlspecialchars_decode($markup, ENT_QUOTES), $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted Card template, escaped local values.
+echo '<div class="alphacard">' . alphacard_render_markup(htmlspecialchars_decode($markup, ENT_QUOTES), $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
