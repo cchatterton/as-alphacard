@@ -1,0 +1,19 @@
+{
+  "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+  "apiVersion": 3,
+  "name": "acf/alphacard",
+  "title": "AlphaCard",
+  "description": "Render a selected Card with values entered in this block",
+  "category": "formatting",
+  "icon": "index-card",
+  "keywords": ["alpha", "card", "alphacard"],
+  "acf": {
+    "blockVersion": 3,
+    "mode": "preview",
+    "renderTemplate": "template.php",
+    "validate": true,
+    "hideFieldsInSidebar": true,
+    "expandedEditorButtonText": "Edit AlphaCard"
+  },
+  "supports": {"align": false, "mode": false}
+}
