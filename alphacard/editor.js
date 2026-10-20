@@ -9,8 +9,30 @@
 
     function cardId(block) {
         const cardField = field(block, 'card');
-        const input = cardField && cardField.querySelector('select, input[type="hidden"]');
-        return input ? Number(input.value) || 0 : 0;
+        if (!cardField) return 0;
+
+        function asId(value) {
+            if (Array.isArray(value)) value = value[0];
+            if (value && typeof value === 'object') value = value.ID || value.id;
+            return /^\d+$/.test(String(value)) ? Number(value) : 0;
+        }
+
+        // ACF's Post Object is a Select2 field. Its field model owns the
+        // selected value; the first DOM select/hidden input may be empty.
+        if (window.acf && window.acf.getField && window.jQuery) {
+            const acfField = window.acf.getField(window.jQuery(cardField));
+            if (acfField && typeof acfField.val === 'function') {
+                const id = asId(acfField.val());
+                if (id) return id;
+            }
+        }
+
+        const inputs = cardField.querySelectorAll('.acf-input select[name], .acf-input input[type="hidden"][name]');
+        for (const input of inputs) {
+            const id = asId(input.value);
+            if (id) return id;
+        }
+        return 0;
     }
 
     function storage(block) {

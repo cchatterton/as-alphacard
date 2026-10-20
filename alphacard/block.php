@@ -22,14 +22,14 @@ function alphacard_enqueue_editor() {
         'alphacard-editor',
         get_stylesheet_directory_uri() . '/blocks/alphacard/editor.js',
         array('jquery', 'acf-input'),
-        '1.0.0',
+        '1.0.1',
         true
     );
     wp_enqueue_style(
         'alphacard-editor',
         get_stylesheet_directory_uri() . '/blocks/alphacard/editor.css',
         array(),
-        '1.0.0'
+        '1.0.1'
     );
     wp_localize_script('alphacard-editor', 'alphaCardEditor', array(
         'ajaxUrl' => admin_url('admin-ajax.php'),
