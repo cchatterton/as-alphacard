@@ -31,7 +31,6 @@ if (!$cards) {
     return;
 }
 
-echo '<div class="alphacard-group">';
 foreach ($cards as $index => $item) {
     if (!is_array($item)) {
         continue;
@@ -61,4 +60,3 @@ foreach ($cards as $index => $item) {
     }
     echo '<div class="alphacard">' . alphacard_render_markup(htmlspecialchars_decode($markup, ENT_QUOTES), $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
 }
-echo '</div>';

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 - 2026-11-06
+
+- Preserve the original frontend wrapper for existing single-card blocks while rendering repeater Cards in sequence.
+
 ## 1.1.0 - 2026-11-06
 
 - Add native ACF repeater rows so one AlphaCard block can render multiple Cards in order.

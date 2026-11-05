@@ -22,13 +22,13 @@ $fields['cards'] = array(
     array('card' => 10, 'token_values' => json_encode(array('card' => 10, 'values' => array('title' => '<em>First</em>')))),
     array('card' => 11, 'token_values' => json_encode(array('card' => 11, 'values' => array('title' => 'Second')))),
 );
-if (render_alpha(array()) !== '<div class="alphacard-group"><div class="alphacard"><b><em>First</em></b></div><div class="alphacard"><i>Second</i></div></div>') {
+if (render_alpha(array()) !== '<div class="alphacard"><b><em>First</em></b></div><div class="alphacard"><i>Second</i></div>') {
     throw new RuntimeException('Repeater cards did not render in order');
 }
 $fields['cards'] = false;
 $fields['card'] = 10;
 $fields['token_values'] = json_encode(array('card' => 10, 'values' => array('title' => 'Legacy')));
-if (render_alpha(array()) !== '<div class="alphacard-group"><div class="alphacard"><b>Legacy</b></div></div>') {
+if (render_alpha(array()) !== '<div class="alphacard"><b>Legacy</b></div>') {
     throw new RuntimeException('Legacy card was not preserved');
 }
 if (render_alpha(array('cards' => '0')) !== '') {
