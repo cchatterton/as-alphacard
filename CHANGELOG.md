@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 - 2026-11-06
+
+- Add native ACF repeater rows so one AlphaCard block can render multiple Cards in order.
+- Carry shared token values across Card changes and retain other values in a Non-matching content section.
+- Keep existing single-card blocks renderable and offer an editor action to move them into the repeater.
+
 ## 1.0.2 - 2026-10-20
 
 - Insert local merge-token values exactly as entered, allowing HTML content in Card output.

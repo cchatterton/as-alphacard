@@ -3,6 +3,55 @@
   "title": "AlphaCard",
   "fields": [
     {
+      "key": "field_alphacard_cards",
+      "label": "Cards",
+      "name": "cards",
+      "type": "repeater",
+      "instructions": "Add a row for each Card, then select its template and enter its merge-token content.",
+      "required": 0,
+      "collapsed": "field_alphacard_item_card",
+      "min": 0,
+      "max": 0,
+      "layout": "block",
+      "button_label": "Add Card",
+      "sub_fields": [
+        {
+          "key": "field_alphacard_item_card",
+          "label": "Card",
+          "name": "card",
+          "type": "post_object",
+          "post_type": [
+            "card"
+          ],
+          "post_status": [
+            "publish"
+          ],
+          "return_format": "id",
+          "multiple": 0,
+          "allow_null": 0,
+          "ui": 1
+        },
+        {
+          "key": "field_alphacard_item_merge_tokens",
+          "label": "Merge tokens",
+          "name": "merge_tokens",
+          "type": "message",
+          "message": "<a href=\"#\" class=\"alphacard-fetch\">Get merge tokens</a>",
+          "new_lines": "",
+          "esc_html": 0
+        },
+        {
+          "key": "field_alphacard_item_token_values",
+          "label": "Token values",
+          "name": "token_values",
+          "type": "textarea",
+          "rows": 2,
+          "new_lines": "",
+          "default_value": ""
+        }
+      ]
+    },
+    {
       "key": "field_alphacard_card",
       "label": "Card",
       "name": "card",
@@ -15,8 +64,11 @@
       ],
       "return_format": "id",
       "multiple": 0,
-      "allow_null": 0,
-      "ui": 1
+      "allow_null": 1,
+      "ui": 1,
+      "wrapper": {
+        "class": "alphacard-legacy"
+      }
     },
     {
       "key": "field_alphacard_merge_tokens",
@@ -25,7 +77,10 @@
       "type": "message",
       "message": "<a href=\"#\" class=\"alphacard-fetch\">Get merge tokens</a>",
       "new_lines": "",
-      "esc_html": 0
+      "esc_html": 0,
+      "wrapper": {
+        "class": "alphacard-legacy"
+      }
     },
     {
       "key": "field_alphacard_token_values",
@@ -34,7 +89,10 @@
       "type": "textarea",
       "rows": 2,
       "new_lines": "",
-      "default_value": ""
+      "default_value": "",
+      "wrapper": {
+        "class": "alphacard-legacy"
+      }
     }
   ],
   "location": [

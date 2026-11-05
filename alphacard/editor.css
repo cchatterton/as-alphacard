@@ -1,6 +1,15 @@
+.alphacard-legacy { display: none !important; }
 .alphacard-token-row { margin: 0 0 1rem; }
-.alphacard-token-row label { display: block; font-weight: 600; margin-bottom: .25rem; }
-.alphacard-token-row textarea { width: 100%; }
+.alphacard-token-row label,
+.alphacard-nonmatching label { display: block; font-weight: 600; margin-bottom: .25rem; }
+.alphacard-token-row textarea,
+.alphacard-nonmatching textarea { width: 100%; }
 .alphacard-status { margin: .5rem 0 1rem; }
+.alphacard-nonmatching { margin-top: 1rem; }
+.alphacard-nonmatching h4 { margin: 0 0 .5rem; }
+.alphacard-nonmatching p { margin: 0 0 .75rem; }
+.alphacard-nonmatching-row { margin-bottom: .75rem; }
 .alphacard-fetch[aria-disabled="true"] { opacity: .6; pointer-events: none; }
-.alphacard-fetch:focus-visible { outline: .125rem solid currentColor; outline-offset: .125rem; }
+.alphacard-fetch:focus-visible,
+.alphacard-migrate:focus-visible { outline: .125rem solid currentColor; outline-offset: .125rem; }
+.alphacard-migration { margin: .75rem 0; }
