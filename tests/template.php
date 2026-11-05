@@ -31,7 +31,10 @@ $fields['token_values'] = json_encode(array('card' => 10, 'values' => array('tit
 if (render_alpha(array()) !== '<div class="alphacard"><b>Legacy</b></div>') {
     throw new RuntimeException('Legacy card was not preserved');
 }
-if (render_alpha(array('cards' => '0')) !== '') {
-    throw new RuntimeException('Removed cards unexpectedly restored legacy content');
+if (render_alpha(array('cards' => '0')) !== '<div class="alphacard"><b>Legacy</b></div>') {
+    throw new RuntimeException('Saving a blank repeater lost the legacy card');
+}
+if (render_alpha(array('cards' => '0', 'legacy_migrated' => '1')) !== '') {
+    throw new RuntimeException('Removed migrated cards unexpectedly restored legacy content');
 }
 echo "Template checks passed\n";

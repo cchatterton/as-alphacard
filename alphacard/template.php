@@ -13,8 +13,10 @@ if (isset($runtime_data['cards']) && is_array($runtime_data['cards'])) {
     $cards = $runtime_data['cards'];
 }
 
-// Saved single-card blocks retain their content until moved into a repeater row.
-if (!$cards && !array_key_exists('cards', $runtime_data)) {
+// A blank repeater may be saved before a legacy block is moved into a row.
+$legacy_migrated = array_key_exists('legacy_migrated', $runtime_data)
+    ? (bool) $runtime_data['legacy_migrated'] : (bool) get_field('legacy_migrated');
+if (!$cards && !$legacy_migrated) {
     $legacy_card = array_key_exists('card', $runtime_data)
         ? $runtime_data['card'] : get_field('card');
     $legacy_values = array_key_exists('token_values', $runtime_data)

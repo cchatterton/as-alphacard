@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 - 2026-11-06
+
+- Keep existing single-card blocks rendering if saved with an empty repeater; mark them migrated only after moving their content into a row.
+
 ## 1.1.1 - 2026-11-06
 
 - Preserve the original frontend wrapper for existing single-card blocks while rendering repeater Cards in sequence.

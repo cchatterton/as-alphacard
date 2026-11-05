@@ -274,8 +274,12 @@
             } else {
                 targetSelect.value = String(id);
             }
+            const migratedField = field(block, 'field_alphacard_legacy_migrated');
+            const migratedInput = migratedField && migratedField.querySelector('input[type="checkbox"]');
+            if (migratedInput) migratedInput.checked = true;
             window.jQuery(targetSelect).trigger('change');
             targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            if (migratedInput) migratedInput.dispatchEvent(new Event('change', { bubbles: true }));
             const notice = button.closest('.alphacard-migration');
             if (notice) notice.remove();
         }).catch(function (error) {

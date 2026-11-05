@@ -93,6 +93,17 @@
       "wrapper": {
         "class": "alphacard-legacy"
       }
+    },
+    {
+      "key": "field_alphacard_legacy_migrated",
+      "label": "Legacy moved",
+      "name": "legacy_migrated",
+      "type": "true_false",
+      "default_value": 0,
+      "ui": 0,
+      "wrapper": {
+        "class": "alphacard-legacy"
+      }
     }
   ],
   "location": [
