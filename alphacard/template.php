@@ -33,6 +33,11 @@ if (!$cards) {
     return;
 }
 
+$multiple_cards = count($cards) > 1;
+if ($multiple_cards) {
+    echo '<div class="alphacard-grid">';
+}
+
 foreach ($cards as $index => $item) {
     if (!is_array($item)) {
         continue;
@@ -61,4 +66,8 @@ foreach ($cards as $index => $item) {
         $values = array();
     }
     echo '<div class="alphacard">' . alphacard_render_markup(htmlspecialchars_decode($markup, ENT_QUOTES), $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
+}
+
+if ($multiple_cards) {
+    echo '</div>';
 }

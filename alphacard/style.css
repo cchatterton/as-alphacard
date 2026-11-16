@@ -1,0 +1,15 @@
+.alphacard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: var(--alphacard-gap, .6rem);
+    align-items: stretch;
+}
+
+.alphacard-grid > .alphacard {
+    min-width: 0;
+}
+
+.alphacard-grid > .alphacard > :first-child {
+    height: 100%;
+    box-sizing: border-box;
+}

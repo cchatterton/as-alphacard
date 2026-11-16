@@ -11,11 +11,11 @@ Copy `alphacard/` into the active theme's `blocks/` directory. Use the same shar
 1. Add AlphaCard, click **Add Card**, and select a published Card in the new row.
 2. The editor loads its merge tokens automatically. **Get merge tokens** refreshes the fields if the Card template changes.
 3. Enter text, HTML, or URLs as needed, then save the page. Each row stores its values in its own `token_values` ACF subfield as JSON.
-4. Add, reorder, or remove Card rows using the native ACF repeater controls. Cards render in row order.
+4. Add, reorder, or remove Card rows using the native ACF repeater controls. Cards render in row order. When there is more than one Card, they use a responsive grid that places them side by side where space allows and wraps to one column on narrow screens.
 
 When a row changes to another Card, values for tokens with the same name are carried over. The remaining non-empty values appear under **Non-matching content** as copyable text. They remain saved with the row and are restored if a later Card uses those token names again.
 
-Previously saved single-card blocks continue to render. In the editor, **Move existing Card into list** copies the saved Card and values into the first repeater row. Save the page to complete that move.
+Previously saved single-card blocks keep their original frontend markup and continue to render. In the editor, **Move existing Card into list** copies the saved Card and values into the first repeater row. Save the page to complete that move.
 
 Example: a template containing `%%$post->post_title%%` and `%%$image->featured%%` gets two local inputs. These names are treated as literal keys; AlphaCard does not query a post, ACF field, or featured image to resolve them.
 

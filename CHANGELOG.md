@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.3 - 2026-11-16
+
+- Lay out multiple Cards in a responsive grid while preserving single-card markup.
+
 ## 1.1.2 - 2026-11-06
 
 - Keep existing single-card blocks rendering if saved with an empty repeater; mark them migrated only after moving their content into a row.

@@ -4,6 +4,7 @@
   "name": "acf/alphacard",
   "title": "AlphaCard",
   "description": "Render a selected Card with values entered in this block",
+  "style": "file:./style.css",
   "category": "formatting",
   "icon": "index-card",
   "keywords": ["alpha", "card", "alphacard"],
