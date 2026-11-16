@@ -8,18 +8,18 @@ Copy `alphacard/` into the active theme's `blocks/` directory. Use the same shar
 
 ## Edit a page
 
-1. Add AlphaCard, click **Add Card**, and select a published Card in the new row.
-2. The editor loads its merge tokens automatically. **Get merge tokens** refreshes the fields if the Card template changes.
-3. Enter text, HTML, or URLs as needed, then save the page. Each row stores its values in its own `token_values` ACF subfield as JSON.
-4. Add, reorder, or remove Card rows using the native ACF repeater controls. Cards render in row order. When there is more than one Card, they use a responsive grid that places them side by side where space allows and wraps to one column on narrow screens.
+1. Add AlphaCard and select one published Card template at the top of the block.
+2. Click **Get merge tokens**. The token list applies to every row.
+3. Click **Add Card** for each instance and enter its own text, HTML, or URL values.
+4. Add, reorder, or remove rows using the native ACF repeater controls. Rows render in order and use the same Card template. Multiple rows use a responsive grid; one row retains the original markup.
 
-When a row changes to another Card, values for tokens with the same name are carried over. The remaining non-empty values appear under **Non-matching content** as copyable text. They remain saved with the row and are restored if a later Card uses those token names again.
+Changing the shared Card template refreshes the token list for every row. Matching token names keep their values. Other non-empty values remain under **Non-matching content** in that row for copying, and are restored if a later template uses those token names.
 
-Previously saved single-card blocks keep their original frontend markup and continue to render. In the editor, **Move existing Card into list** copies the saved Card and values into the first repeater row. Save the page to complete that move.
+Previously saved single-card blocks continue to render. **Move existing Card into list** copies their local values into a row when needed. Blocks saved with the earlier per-row Card selectors use the first row's Card as their shared template until the top-level selection is saved. Review any earlier block that deliberately mixed different templates within one repeater.
 
-Example: a template containing `%%$post->post_title%%` and `%%$image->featured%%` gets two local inputs. These names are treated as literal keys; AlphaCard does not query a post, ACF field, or featured image to resolve them.
+Example: a template containing `%%$post->post_title%%` and `%%$image->featured%%` creates those two inputs in every row. The names are literal keys; AlphaCard does not query a post, ACF field, or featured image to resolve them.
 
-The block renders each selected Card's markup with local substitutions. Missing values become empty strings. Values are inserted exactly as entered, including HTML markup, into text or attribute positions. Editors should use the inputs in the context of the Card template. Card template markup is administrator-authored content, as in AlphaBlock's Card workflow. An unpublished or missing Card renders nothing on the public page and shows guidance in editor preview.
+Values are inserted exactly as entered, including HTML markup, into text or attribute positions. Card template markup is administrator-authored content, as in AlphaBlock's Card workflow. An unpublished or missing Card renders nothing on the public page and shows guidance in editor preview.
 
 ## Development
 

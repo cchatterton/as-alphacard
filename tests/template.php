@@ -1,5 +1,5 @@
 <?php
-// Checks ordered repeater output and compatibility with saved single-card blocks.
+// Checks one template per block, row order, and legacy rendering.
 define('ABSPATH', __DIR__);
 $fields = array();
 $posts = array(
@@ -18,23 +18,35 @@ function render_alpha($data) {
     include dirname(__DIR__) . '/alphacard/template.php';
     return ob_get_clean();
 }
+$fields['field_alphacard_card'] = 10;
 $fields['cards'] = array(
     array('card' => 10, 'token_values' => json_encode(array('card' => 10, 'values' => array('title' => '<em>First</em>')))),
     array('card' => 11, 'token_values' => json_encode(array('card' => 11, 'values' => array('title' => 'Second')))),
 );
-if (render_alpha(array()) !== '<div class="alphacard-grid"><div class="alphacard"><b><em>First</em></b></div><div class="alphacard"><i>Second</i></div></div>') {
-    throw new RuntimeException('Repeater cards did not render in order');
+if (render_alpha(array()) !== '<div class="alphacard-grid"><div class="alphacard"><b><em>First</em></b></div><div class="alphacard"><b>Second</b></div></div>') {
+    throw new RuntimeException('Rows did not share one template');
+}
+if (render_alpha(array('card' => 11)) !== '<div class="alphacard-grid"><div class="alphacard"><i><em>First</em></i></div><div class="alphacard"><i>Second</i></div></div>') {
+    throw new RuntimeException('Shared template swap did not retain matching values');
+}
+$fields['field_alphacard_card'] = false;
+if (render_alpha(array()) !== '<div class="alphacard-grid"><div class="alphacard"><b><em>First</em></b></div><div class="alphacard"><b>Second</b></div></div>') {
+    throw new RuntimeException('Existing per-row blocks did not fall back to their first Card');
 }
 $fields['cards'] = false;
-$fields['card'] = 10;
+$fields['field_alphacard_card'] = 10;
 $fields['token_values'] = json_encode(array('card' => 10, 'values' => array('title' => 'Legacy')));
 if (render_alpha(array()) !== '<div class="alphacard"><b>Legacy</b></div>') {
-    throw new RuntimeException('Legacy card was not preserved');
+    throw new RuntimeException('Legacy single Card was not preserved');
 }
 if (render_alpha(array('cards' => '0')) !== '<div class="alphacard"><b>Legacy</b></div>') {
-    throw new RuntimeException('Saving a blank repeater lost the legacy card');
+    throw new RuntimeException('Saving a blank repeater lost the legacy Card');
 }
 if (render_alpha(array('cards' => '0', 'legacy_migrated' => '1')) !== '') {
-    throw new RuntimeException('Removed migrated cards unexpectedly restored legacy content');
+    throw new RuntimeException('Removed migrated Cards restored legacy content');
+}
+$fields['token_values'] = '';
+if (render_alpha(array()) !== '') {
+    throw new RuntimeException('An empty new block rendered without a row');
 }
 echo "Template checks passed\n";

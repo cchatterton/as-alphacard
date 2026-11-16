@@ -13,61 +13,62 @@ if (isset($runtime_data['cards']) && is_array($runtime_data['cards'])) {
     $cards = $runtime_data['cards'];
 }
 
-// A blank repeater may be saved before a legacy block is moved into a row.
+$card_id = array_key_exists('card', $runtime_data)
+    ? (int) $runtime_data['card'] : (int) get_field('field_alphacard_card');
+// Blocks saved with per-row selectors use their first Card until the shared
+// selector is saved in the editor.
+if (!$card_id && $cards) {
+    foreach ($cards as $item) {
+        if (is_array($item) && !empty($item['card'])) {
+            $card_id = (int) $item['card'];
+            break;
+        }
+    }
+}
+
 $legacy_migrated = array_key_exists('legacy_migrated', $runtime_data)
     ? (bool) $runtime_data['legacy_migrated'] : (bool) get_field('legacy_migrated');
-if (!$cards && !$legacy_migrated) {
-    $legacy_card = array_key_exists('card', $runtime_data)
-        ? $runtime_data['card'] : get_field('card');
+if (!$cards && !$legacy_migrated && $card_id) {
     $legacy_values = array_key_exists('token_values', $runtime_data)
         ? $runtime_data['token_values'] : get_field('token_values');
-    if ($legacy_card) {
-        $cards[] = array('card' => $legacy_card, 'token_values' => $legacy_values);
+    if ($legacy_values !== false && $legacy_values !== null && $legacy_values !== '') {
+        $cards[] = array('token_values' => $legacy_values);
     }
 }
 
 if (!$cards) {
     if (!empty($is_preview)) {
-        echo '<p>Add a Card to render AlphaCard.</p>';
+        echo '<p>Select a Card and add a row to render AlphaCard.</p>';
     }
     return;
 }
 
+$card = $card_id ? get_post($card_id) : null;
+if (!$card || $card->post_type !== 'card' || $card->post_status !== 'publish') {
+    if (!empty($is_preview)) {
+        echo '<p>Select a published Card for AlphaCard.</p>';
+    }
+    return;
+}
+$markup = get_post_meta($card_id, 'card_markup', true);
+if (!is_string($markup) || $markup === '') {
+    if (!empty($is_preview)) {
+        echo '<p>The selected Card has no markup.</p>';
+    }
+    return;
+}
+$markup = htmlspecialchars_decode($markup, ENT_QUOTES);
 $multiple_cards = count($cards) > 1;
 if ($multiple_cards) {
     echo '<div class="alphacard-grid">';
 }
-
-foreach ($cards as $index => $item) {
+foreach ($cards as $item) {
     if (!is_array($item)) {
         continue;
     }
-    $card_id = isset($item['card']) ? (int) $item['card'] : 0;
-    $card = $card_id ? get_post($card_id) : null;
-    if (!$card || $card->post_type !== 'card' || $card->post_status !== 'publish') {
-        if (!empty($is_preview)) {
-            echo '<p>Card ' . esc_html((string) ($index + 1)) . ': select a published Card.</p>';
-        }
-        continue;
-    }
-
-    $markup = get_post_meta($card_id, 'card_markup', true);
-    if (!is_string($markup) || $markup === '') {
-        if (!empty($is_preview)) {
-            echo '<p>Card ' . esc_html((string) ($index + 1)) . ' has no markup.</p>';
-        }
-        continue;
-    }
-
-    $raw_values = isset($item['token_values']) ? $item['token_values'] : '';
-    $saved_state = is_string($raw_values) ? json_decode($raw_values, true) : $raw_values;
-    $values = alphacard_parse_values($raw_values);
-    if (is_array($saved_state) && isset($saved_state['card']) && (int) $saved_state['card'] !== $card_id) {
-        $values = array();
-    }
-    echo '<div class="alphacard">' . alphacard_render_markup(htmlspecialchars_decode($markup, ENT_QUOTES), $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
+    $values = alphacard_parse_values(isset($item['token_values']) ? $item['token_values'] : '');
+    echo '<div class="alphacard">' . alphacard_render_markup($markup, $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
 }
-
 if ($multiple_cards) {
     echo '</div>';
 }

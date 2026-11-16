@@ -1,4 +1,5 @@
-.alphacard-legacy { display: none !important; }
+.alphacard-legacy,
+.alphacard-row-legacy { display: none !important; }
 .alphacard-token-row { margin: 0 0 1rem; }
 .alphacard-token-row label,
 .alphacard-nonmatching label { display: block; font-weight: 600; margin-bottom: .25rem; }

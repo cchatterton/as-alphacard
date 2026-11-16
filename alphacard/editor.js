@@ -2,10 +2,12 @@
     'use strict';
 
     const blockSelector = '.acf-block-fields[data-block-id]';
-    const repeaterSelector = '.acf-field[data-key="field_alphacard_cards"]';
-    const rowSelector = repeaterSelector + ' .acf-row:not(.acf-clone)';
+    const rowSelector = '.acf-field[data-key="field_alphacard_cards"] .acf-row:not(.acf-clone)';
+    const mountedBlocks = new WeakSet();
     const mountedRows = new WeakSet();
-    const requestNumbers = new WeakMap();
+    const adoptedBlocks = new WeakSet();
+    const tokenCache = new WeakMap();
+    const requests = new WeakMap();
     let inputNumber = 0;
 
     function field(container, key) {
@@ -38,8 +40,8 @@
         return 0;
     }
 
-    function cardId(row) {
-        return selectedCardId(field(row, 'field_alphacard_item_card'));
+    function cardId(block) {
+        return selectedCardId(field(block, 'field_alphacard_card'));
     }
 
     function storage(row) {
@@ -63,8 +65,8 @@
         input.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    function feedback(row, message) {
-        const status = row.querySelector('.alphacard-status');
+    function feedback(container, message) {
+        const status = container.querySelector('.alphacard-status');
         if (status) status.textContent = message;
     }
 
@@ -105,22 +107,41 @@
             const heading = document.createElement('h4');
             heading.textContent = 'Non-matching content';
             const instructions = document.createElement('p');
-            instructions.textContent = 'These values are kept for copying into the new Card.';
+            instructions.textContent = 'These values are kept for copying into the selected Card.';
             unmatched.append(heading, instructions);
             names.forEach(function (token) { addValueRow(unmatched, token, String(leftovers[token]), false); });
         }
         feedback(row, tokens.length
-            ? tokens.length + ' merge token' + (tokens.length === 1 ? '' : 's') + ' ready. Save the page when finished.'
-            : 'This Card has no merge tokens.');
+            ? tokens.length + ' merge token' + (tokens.length === 1 ? '' : 's') + ' ready.'
+            : 'The selected Card has no merge tokens.');
+    }
+
+    function reconcileRow(row, id, tokens) {
+        const previous = readState(row);
+        if (Number(previous.card) === id && Array.isArray(previous.tokens)
+            && JSON.stringify(previous.tokens) === JSON.stringify(tokens) && previous.values) {
+            renderState(row, previous);
+            return;
+        }
+        const pool = Object.assign(Object.create(null), previous.unmatched || {}, previous.values || {});
+        const values = Object.create(null);
+        const unmatched = Object.create(null);
+        tokens.forEach(function (token) {
+            values[token] = Object.prototype.hasOwnProperty.call(pool, token) ? String(pool[token]) : '';
+        });
+        Object.keys(pool).forEach(function (token) {
+            if (!tokens.includes(token) && pool[token] !== '') unmatched[token] = String(pool[token]);
+        });
+        const state = { card: id, tokens: tokens, values: values, unmatched: unmatched };
+        saveState(row, state);
+        renderState(row, state);
     }
 
     function mountRow(row) {
-        if (mountedRows.has(row)) return;
-        const action = field(row, 'field_alphacard_item_merge_tokens');
+        if (mountedRows.has(row)) return false;
+        const content = field(row, 'field_alphacard_item_merge_tokens');
         const input = storage(row);
-        const cardField = field(row, 'field_alphacard_item_card');
-        const link = action && action.querySelector('.alphacard-fetch');
-        if (!link || !input || !cardField) return;
+        if (!content || !input) return false;
         mountedRows.add(row);
         input.closest('.acf-field').style.display = 'none';
         const status = document.createElement('p');
@@ -132,28 +153,35 @@
         const unmatched = document.createElement('div');
         unmatched.className = 'alphacard-nonmatching';
         unmatched.hidden = true;
-        link.after(status, active, unmatched);
+        content.querySelector('.acf-input').append(status, active, unmatched);
         const state = readState(row);
-        if (Number(state.card) === cardId(row) && Array.isArray(state.tokens)) {
+        if (Array.isArray(state.tokens)) {
             renderState(row, state);
-        } else if (cardId(row)) {
-            refreshTokens(row);
         } else {
-            feedback(row, 'Select a Card to load its merge tokens.');
+            feedback(row, 'Select a Card above to load its merge tokens.');
         }
+        return true;
     }
 
-    function refreshTokens(row) {
-        const id = cardId(row);
+    function refreshBlock(block, force) {
+        const id = cardId(block);
         if (!id) {
-            feedback(row, 'Select a Card first.');
+            feedback(field(block, 'field_alphacard_merge_tokens'), 'Select a Card first.');
             return;
         }
-        const requestNumber = (requestNumbers.get(row) || 0) + 1;
-        requestNumbers.set(row, requestNumber);
-        const link = row.querySelector('.alphacard-fetch');
+        const cached = tokenCache.get(block);
+        if (!force && cached && cached.card === id) {
+            rows(block).forEach(function (row) { reconcileRow(row, id, cached.tokens); });
+            return;
+        }
+        const previousRequest = requests.get(block);
+        if (!force && previousRequest && previousRequest.pending && previousRequest.card === id) return;
+        const sequence = previousRequest ? previousRequest.sequence + 1 : 1;
+        requests.set(block, { card: id, sequence: sequence, pending: true });
+        const action = field(block, 'field_alphacard_merge_tokens');
+        const link = action.querySelector('.alphacard-fetch');
         link.setAttribute('aria-disabled', 'true');
-        feedback(row, 'Finding merge tokens…');
+        feedback(action, 'Finding merge tokens…');
         const body = new URLSearchParams({
             action: 'alphacard_get_merge_tokens',
             nonce: alphaCardEditor.nonce,
@@ -162,46 +190,69 @@
         fetch(alphaCardEditor.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body })
             .then(function (response) { return response.json(); })
             .then(function (result) {
-                if (requestNumbers.get(row) !== requestNumber || cardId(row) !== id) return;
+                if (requests.get(block).sequence !== sequence || cardId(block) !== id) return;
                 if (!result.success) throw new Error(result.data && result.data.message || 'Unable to read the Card.');
-                const previous = readState(row);
                 if (!result.data || !Array.isArray(result.data.tokens)) {
                     throw new Error('The Card returned an invalid token list. Try again.');
                 }
-                const pool = Object.assign(Object.create(null), previous.unmatched || {}, previous.values || {});
                 const tokens = result.data.tokens;
-                const values = Object.create(null);
-                const unmatched = Object.create(null);
-                tokens.forEach(function (token) {
-                    values[token] = Object.prototype.hasOwnProperty.call(pool, token) ? String(pool[token]) : '';
-                });
-                Object.keys(pool).forEach(function (token) {
-                    if (!tokens.includes(token) && pool[token] !== '') unmatched[token] = String(pool[token]);
-                });
-                const state = { card: id, tokens: tokens, values: values, unmatched: unmatched };
-                saveState(row, state);
-                renderState(row, state);
+                tokenCache.set(block, { card: id, tokens: tokens });
+                rows(block).forEach(function (row) { reconcileRow(row, id, tokens); });
+                feedback(action, tokens.length + ' merge token' + (tokens.length === 1 ? '' : 's') + ' loaded for all Cards.');
             })
             .catch(function (error) {
-                if (requestNumbers.get(row) === requestNumber) feedback(row, error.message);
+                if (requests.get(block).sequence === sequence) feedback(action, error.message);
             })
             .finally(function () {
-                if (requestNumbers.get(row) === requestNumber) link.removeAttribute('aria-disabled');
+                const current = requests.get(block);
+                if (current.sequence === sequence) {
+                    current.pending = false;
+                    link.removeAttribute('aria-disabled');
+                }
             });
     }
 
-    function legacyCard(block) {
-        return selectedCardId(field(block, 'field_alphacard_card'));
+    function adoptSavedCard(block) {
+        if (cardId(block) || adoptedBlocks.has(block)) return;
+        adoptedBlocks.add(block);
+        const prior = rows(block).find(function (row) {
+            return selectedCardId(field(row, 'field_alphacard_item_card'));
+        });
+        if (!prior) return;
+        const oldField = field(prior, 'field_alphacard_item_card');
+        const oldId = selectedCardId(oldField);
+        const oldSelect = oldField.querySelector('select');
+        const oldOption = oldSelect && Array.from(oldSelect.querySelectorAll('option'))
+            .find(function (option) { return option.selected; });
+        const sharedField = field(block, 'field_alphacard_card');
+        const sharedInput = sharedField.querySelector('select, input[type="hidden"]');
+        if (!sharedInput) return;
+        if (sharedInput.tagName === 'SELECT') {
+            Array.from(sharedInput.options).forEach(function (option) { option.selected = false; });
+            const option = document.createElement('option');
+            option.value = String(oldId);
+            option.textContent = oldOption ? oldOption.textContent : 'Card ' + oldId;
+            option.selected = true;
+            sharedInput.append(option);
+        } else {
+            sharedInput.value = String(oldId);
+        }
+        window.jQuery(sharedInput).trigger('change');
     }
 
     function mountLegacyNotice(block) {
         const repeater = field(block, 'field_alphacard_cards');
-        if (!repeater || rows(block).length || !legacyCard(block)) return;
+        const oldValueField = field(block, 'field_alphacard_token_values');
+        const oldValue = oldValueField && oldValueField.querySelector('textarea');
+        const migratedField = field(block, 'field_alphacard_legacy_migrated');
+        const migratedInput = migratedField && migratedField.querySelector('input[type="checkbox"]');
+        if (migratedInput && migratedInput.checked) return;
+        if (!repeater || rows(block).length || !cardId(block) || !oldValue || !oldValue.value) return;
         if (repeater.querySelector('.alphacard-migration')) return;
         const notice = document.createElement('div');
         notice.className = 'alphacard-migration notice notice-info inline';
         const description = document.createElement('p');
-        description.textContent = 'This block has a saved single Card. Move it into the list to add more Cards.';
+        description.textContent = 'This block has a saved single Card. Move its content into a row to add more Cards.';
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'button alphacard-migrate';
@@ -212,8 +263,22 @@
 
     function mountAll() {
         document.querySelectorAll(blockSelector).forEach(function (block) {
-            rows(block).forEach(mountRow);
+            const firstMount = !mountedBlocks.has(block);
+            if (firstMount) {
+                mountedBlocks.add(block);
+                const action = field(block, 'field_alphacard_merge_tokens');
+                if (action) {
+                    const status = document.createElement('p');
+                    status.className = 'alphacard-status';
+                    status.setAttribute('role', 'status');
+                    status.setAttribute('aria-live', 'polite');
+                    action.querySelector('.acf-input').append(status);
+                }
+            }
+            const added = rows(block).filter(mountRow);
+            adoptSavedCard(block);
             mountLegacyNotice(block);
+            if (firstMount || added.length) refreshBlock(block, false);
         });
     }
 
@@ -233,53 +298,29 @@
                 reject(new Error('The new Card row did not appear. Try Add Card manually.'));
             }, 3000);
             observer.observe(repeater, { childList: true, subtree: true });
-            observer.takeRecords();
-            const added = rows(block).find(function (row) { return !existing.has(row); });
-            if (added) {
-                observer.disconnect();
-                clearTimeout(timeout);
-                resolve(added);
-            }
         });
     }
 
     function migrateLegacy(block, button) {
-        const id = legacyCard(block);
         const oldValueField = field(block, 'field_alphacard_token_values');
-        const oldCardField = field(block, 'field_alphacard_card');
-        const oldSelect = oldCardField && oldCardField.querySelector('select');
         const oldValue = oldValueField && oldValueField.querySelector('textarea');
         const repeater = field(block, 'field_alphacard_cards');
         const addButton = repeater && repeater.querySelector('.acf-actions [data-event="add-row"]');
-        if (!id || !oldValue || !addButton) return;
+        if (!cardId(block) || !oldValue || !addButton) return;
         const existing = new Set(rows(block));
         button.disabled = true;
         const pending = waitForNewRow(block, existing);
         addButton.click();
         pending.then(function (row) {
             mountRow(row);
-            const targetInput = storage(row);
-            const targetCard = field(row, 'field_alphacard_item_card');
-            const targetSelect = targetCard.querySelector('select, input[type="hidden"]');
-            const oldOption = oldSelect && Array.from(oldSelect.querySelectorAll('option'))
-                .find(function (option) { return option.selected; });
-            const label = oldOption ? oldOption.textContent : 'Card ' + id;
-            targetInput.value = oldValue.value;
-            if (targetSelect.tagName === 'SELECT') {
-                const option = document.createElement('option');
-                option.value = String(id);
-                option.textContent = label;
-                option.selected = true;
-                targetSelect.append(option);
-            } else {
-                targetSelect.value = String(id);
-            }
+            storage(row).value = oldValue.value;
             const migratedField = field(block, 'field_alphacard_legacy_migrated');
             const migratedInput = migratedField && migratedField.querySelector('input[type="checkbox"]');
             if (migratedInput) migratedInput.checked = true;
-            window.jQuery(targetSelect).trigger('change');
-            targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            storage(row).dispatchEvent(new Event('change', { bubbles: true }));
             if (migratedInput) migratedInput.dispatchEvent(new Event('change', { bubbles: true }));
+            const cached = tokenCache.get(block);
+            if (cached && cached.card === cardId(block)) reconcileRow(row, cached.card, cached.tokens);
             const notice = button.closest('.alphacard-migration');
             if (notice) notice.remove();
         }).catch(function (error) {
@@ -292,8 +333,8 @@
         const link = event.target.closest('.alphacard-fetch');
         if (link) {
             event.preventDefault();
-            const row = link.closest('.acf-row');
-            if (row) refreshTokens(row);
+            const block = link.closest(blockSelector);
+            if (block) refreshBlock(block, true);
             return;
         }
         const migrate = event.target.closest('.alphacard-migrate');
@@ -308,18 +349,17 @@
         const row = event.target.closest('.acf-row');
         if (!row) return;
         const state = readState(row);
-        if (Number(state.card) !== cardId(row)) return;
+        if (!state.values || typeof state.values !== 'object') state.values = {};
         state.values[event.target.dataset.token] = event.target.value;
         saveState(row, state);
     });
 
     if (window.jQuery) {
-        window.jQuery(document).on('change.alphacard', '.acf-field[data-key="field_alphacard_item_card"] select, .acf-field[data-key="field_alphacard_item_card"] input[type="hidden"]', function () {
-            const row = this.closest('.acf-row');
-            if (row) refreshTokens(row);
+        window.jQuery(document).on('change.alphacard', '.acf-field[data-key="field_alphacard_card"] select, .acf-field[data-key="field_alphacard_card"] input[type="hidden"]', function () {
+            const block = this.closest(blockSelector);
+            if (block) refreshBlock(block, true);
         });
     }
-
     if (window.acf && window.acf.addAction) {
         window.acf.addAction('ready', mountAll);
         window.acf.addAction('append', mountAll);

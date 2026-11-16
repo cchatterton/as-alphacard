@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 - 2026-11-16
+
+- Select one Card template per AlphaCard block and repeat only its local content.
+- Carry matching token values across template changes for every row.
+- Keep blocks saved with per-row Card selections rendering through their first template until the shared selector is saved.
+
 ## 1.1.3 - 2026-11-16
 
 - Lay out multiple Cards in a responsive grid while preserving single-card markup.

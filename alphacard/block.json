@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "acf/alphacard",
   "title": "AlphaCard",
-  "description": "Render a selected Card with values entered in this block",
+  "description": "Repeat one Card template with local values for each row",
   "style": "file:./style.css",
   "category": "formatting",
   "icon": "index-card",
