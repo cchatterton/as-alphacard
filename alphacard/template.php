@@ -58,17 +58,31 @@ if (!is_string($markup) || $markup === '') {
     return;
 }
 $markup = htmlspecialchars_decode($markup, ENT_QUOTES);
-$multiple_cards = count($cards) > 1;
-if ($multiple_cards) {
-    echo '<div class="alphacard-grid">';
+$cards = array_values(array_filter($cards, 'is_array'));
+if (!$cards) {
+    return;
 }
+
+$block_id = isset($block['id']) ? $block['id'] : uniqid('block_');
+$block_classes = function_exists('block_classes') ? block_classes() : 'wp-block-acf-alphacard';
+$block_classes = trim($block_classes . ' wp-block-acf-alphablock');
+$card_slug = isset($card->post_name) ? sanitize_html_class($card->post_name) : '';
+$card_classes = trim('magic_card alphacard ' . $card_slug);
+$per_row = count($cards) > 1 ? 2 : 1;
+
+printf(
+    '<div id="alphacard-%1$s" class="section-wrapper %2$s">' . "\n"
+    . '  <div class="section-inner-wrapper">' . "\n"
+    . '<div class="card-wrapper"><ul class="card-row card-layout-wrap-lg card-layout-wrap-sm" style="--per-row:%3$d;">',
+    esc_attr($block_id),
+    esc_attr($block_classes),
+    $per_row
+);
+
 foreach ($cards as $item) {
-    if (!is_array($item)) {
-        continue;
-    }
     $values = alphacard_parse_values(isset($item['token_values']) ? $item['token_values'] : '');
-    echo '<div class="alphacard">' . alphacard_render_markup($markup, $values) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
+    echo '<li class="card-item"><div class="' . esc_attr($card_classes) . '">'
+        . alphacard_render_markup($markup, $values)
+        . '</div></li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- intentionally raw Card markup and local values.
 }
-if ($multiple_cards) {
-    echo '</div>';
-}
+echo '</ul></div>  </div>' . "\n" . '</div>' . "\n";

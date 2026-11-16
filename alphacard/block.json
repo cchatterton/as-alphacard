@@ -4,7 +4,6 @@
   "name": "acf/alphacard",
   "title": "AlphaCard",
   "description": "Repeat one Card template with local values for each row",
-  "style": "file:./style.css",
   "category": "formatting",
   "icon": "index-card",
   "keywords": ["alpha", "card", "alphacard"],

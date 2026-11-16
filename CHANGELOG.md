@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 - 2026-11-16
+
+- Render AlphaCard rows with AlphaBlock's section and Card wrappers so the existing theme styles control the layout.
+- Remove the custom AlphaCard grid stylesheet.
+
 ## 1.2.0 - 2026-11-16
 
 - Select one Card template per AlphaCard block and repeat only its local content.
