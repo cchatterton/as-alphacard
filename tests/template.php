@@ -15,7 +15,7 @@ function esc_attr($value) { return htmlspecialchars((string) $value, ENT_QUOTES,
 function sanitize_html_class($value) { return preg_replace('/[^A-Za-z0-9_-]/', '', $value); }
 function block_classes() { return 'wp-block-acf-alphacard'; }
 function expected_cards($contents, $slug) {
-    $per_row = count($contents) > 1 ? 2 : 1;
+    $per_row = count($contents);
     $result = '<div id="alphacard-test-block" class="section-wrapper wp-block-acf-alphacard wp-block-acf-alphablock">' . "\n"
         . '  <div class="section-inner-wrapper">' . "\n"
         . '<div class="card-wrapper"><ul class="card-row card-layout-wrap-lg card-layout-wrap-sm" style="--per-row:' . $per_row . ';">';
@@ -39,6 +39,11 @@ $fields['cards'] = array(
 if (render_alpha(array()) !== expected_cards(array('<b><em>First</em></b>', '<b>Second</b>'), 'first-card')) {
     throw new RuntimeException('Rows did not share one template');
 }
+$fields['cards'][] = array('token_values' => json_encode(array('card' => 10, 'values' => array('title' => 'Third'))));
+if (render_alpha(array()) !== expected_cards(array('<b><em>First</em></b>', '<b>Second</b>', '<b>Third</b>'), 'first-card')) {
+    throw new RuntimeException('All three Cards did not share one row');
+}
+array_pop($fields['cards']);
 if (render_alpha(array('card' => 11)) !== expected_cards(array('<i><em>First</em></i>', '<i>Second</i>'), 'second-card')) {
     throw new RuntimeException('Shared template swap did not retain matching values');
 }

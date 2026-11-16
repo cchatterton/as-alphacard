@@ -11,7 +11,7 @@ Copy `alphacard/` into the active theme's `blocks/` directory. Use the same shar
 1. Add AlphaCard and select one published Card template at the top of the block.
 2. Click **Get merge tokens**. The token list applies to every row.
 3. Click **Add Card** for each instance and enter its own text, HTML, or URL values.
-4. Add, reorder, or remove rows using the native ACF repeater controls. Rows render in order and use the same Card template. AlphaCard uses AlphaBlock's section, card row, card item, and `magic_card` wrappers so the theme's existing card layout styles apply. One Card fills the row; multiple Cards wrap two per row on large screens.
+4. Add, reorder, or remove rows using the native ACF repeater controls. Rows render in order and use the same Card template. AlphaCard uses AlphaBlock's section, card row, card item, and `magic_card` wrappers so the theme's existing card layout styles apply. All Cards share one row on large screens and wrap on small screens.
 
 Changing the shared Card template refreshes the token list for every row. Matching token names keep their values. Other non-empty values remain under **Non-matching content** in that row for copying, and are restored if a later template uses those token names.
 

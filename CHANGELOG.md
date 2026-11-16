@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2 - 2026-11-16
+
+- Size the AlphaBlock-compatible desktop card row to the number of Cards, keeping all instances on one row.
+
 ## 1.2.1 - 2026-11-16
 
 - Render AlphaCard rows with AlphaBlock's section and Card wrappers so the existing theme styles control the layout.

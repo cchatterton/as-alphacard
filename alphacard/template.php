@@ -68,7 +68,7 @@ $block_classes = function_exists('block_classes') ? block_classes() : 'wp-block-
 $block_classes = trim($block_classes . ' wp-block-acf-alphablock');
 $card_slug = isset($card->post_name) ? sanitize_html_class($card->post_name) : '';
 $card_classes = trim('magic_card alphacard ' . $card_slug);
-$per_row = count($cards) > 1 ? 2 : 1;
+$per_row = count($cards);
 
 printf(
     '<div id="alphacard-%1$s" class="section-wrapper %2$s">' . "\n"
