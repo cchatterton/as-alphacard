@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3 - 2026-11-16
+
+- Stretch the Card template root to fill its AlphaBlock-compatible Card slot, including templates rooted at a `div`.
+
 ## 1.2.2 - 2026-11-16
 
 - Size the AlphaBlock-compatible desktop card row to the number of Cards, keeping all instances on one row.

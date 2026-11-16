@@ -1,0 +1,4 @@
+.wp-block-acf-alphacard .card-row > .card-item > .magic_card > :first-child {
+    flex: 1;
+    box-sizing: border-box;
+}
